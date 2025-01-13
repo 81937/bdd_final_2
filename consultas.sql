@@ -184,21 +184,38 @@ DELIMITER ;
 
 -- Trigger Grupal --
 
+DELIMITER $$
 
+CREATE TRIGGER elimina_huespedes_reserva
+AFTER DELETE ON reserva
+FOR EACH ROW
+BEGIN
+    -- Eliminar registros relacionados en la tabla reserva_huesped
+    DELETE FROM reserva_huesped
+    WHERE reserva_id = OLD.reserva_id;
+END$$
+
+DELIMITER ;
 
 
 -- Reunión Natural --
 
+SELECT * FROM reserva NATURAL JOIN reserva_habitacion;
+
 
 -- Reunión Natural Por la izquierda --
+
+SELECT r.codigo_unico, h.tarifa_por_noche FROM reserva AS r LEFT JOIN reserva_habitacion AS rh ON rh.reserva_id = r.reserva_id LEFT JOIN habitacion AS h ON h.habitacion_id = rh.habitacion_id;
 
 
 -- Reunión Natural Por la derecha --
 
+SELECT r.codigo_unico, h.nombre_completo FROM reserva AS r RIGHT JOIN reserva_huesped AS rh ON rh.reserva_id = r.reserva_id RIGHT JOIN huesped AS h ON h.huesped_id = rh.huesped_id;
+
 
 -- Producto Cartesiano --
 
-
+SELECT r.codigo_unico, h.nombre_completo FROM reserva r CROSS JOIN reserva_huesped rh CROSS JOIN huesped h;
 
 END //
 
