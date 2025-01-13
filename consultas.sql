@@ -141,7 +141,7 @@ DELIMITER //
 
 DROP PROCEDURE IF EXISTS `consultas_carlos_alvarado` //
 
-CREATE DEFINER=`root`@`%` PROCEDURE `consultas_carlos_alvarado`()
+CREATE DEFINER=`carlos.alvarado`@`%` PROCEDURE `consultas_carlos_alvarado`()
 BEGIN
 
 -- Consultas Carlos Alvarado --
@@ -164,39 +164,6 @@ SELECT * FROM reserva WHERE codigo_unico LIKE '%10%' UNION SELECT * FROM reserva
 
 SELECT AVG(costo) FROM reserva WHERE estado = 'Pendiente';
 
--- Trigger Invidivual --
-
-DELIMITER $$
-
-CREATE TRIGGER valida_fechas_reserva
-BEFORE INSERT ON reserva
-FOR EACH ROW
-BEGIN
-    -- Verificar que la fecha de entrada no sea posterior a la fecha de salida
-    IF NEW.fecha_entrada > NEW.fecha_salida THEN
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'Error: La fecha de entrada no puede ser posterior a la fecha de salida.';
-    END IF;
-END$$
-
-DELIMITER ;
-
-
--- Trigger Grupal --
-
-DELIMITER $$
-
-CREATE TRIGGER elimina_huespedes_reserva
-AFTER DELETE ON reserva
-FOR EACH ROW
-BEGIN
-    -- Eliminar registros relacionados en la tabla reserva_huesped
-    DELETE FROM reserva_huesped
-    WHERE reserva_id = OLD.reserva_id;
-END$$
-
-DELIMITER ;
-
 
 -- Reunión Natural --
 
@@ -218,5 +185,41 @@ SELECT r.codigo_unico, h.nombre_completo FROM reserva AS r RIGHT JOIN reserva_hu
 SELECT r.codigo_unico, h.nombre_completo FROM reserva r CROSS JOIN reserva_huesped rh CROSS JOIN huesped h;
 
 END //
+
+DELIMITER ;
+
+
+-- Trigger Invidivual --
+
+DELIMITER $$
+
+DROP TRIGGER valida_fechas_reserva;
+CREATE TRIGGER valida_fechas_reserva
+BEFORE INSERT ON reserva
+FOR EACH ROW
+BEGIN
+    -- Verificar que la fecha de entrada no sea posterior a la fecha de salida
+    IF NEW.fecha_entrada > NEW.fecha_salida THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Error: La fecha de entrada no puede ser posterior a la fecha de salida.';
+    END IF;
+END$$
+
+DELIMITER ;
+
+
+-- Trigger Grupal --
+
+DELIMITER $$
+DROP TRIGGER elimina_huespedes_reserva;
+
+CREATE TRIGGER elimina_huespedes_reserva
+AFTER DELETE ON reserva
+FOR EACH ROW
+BEGIN
+    -- Eliminar registros relacionados en la tabla reserva_huesped
+    DELETE FROM reserva_huesped
+    WHERE reserva_id = OLD.reserva_id;
+END$$
 
 DELIMITER ;
