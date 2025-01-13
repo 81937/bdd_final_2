@@ -211,7 +211,7 @@ DELIMITER ;
 -- Trigger Grupal --
 
 DELIMITER $$
-DROP TRIGGER elimina_huespedes_reserva;
+DROP TRIGGER IF EXISTS elimina_huespedes_reserva;
 
 CREATE TRIGGER elimina_huespedes_reserva
 AFTER DELETE ON reserva
